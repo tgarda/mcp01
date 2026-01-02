@@ -27,9 +27,9 @@ app = FastAPI(lifespan=lifespan)
 app.mount("/echo", echo_mcp.streamable_http_app())
 app.mount("/math", math_mcp.streamable_http_app())
 
-app.add_middleware(
-    TrustedHostMiddleware, allowed_hosts=allowed_hosts
-)
+# app.add_middleware(
+#     TrustedHostMiddleware, allowed_hosts=allowed_hosts
+# )
 # app.add_middleware(
 #     TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "mcp01.onrender.com"]
 # )
@@ -47,6 +47,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    TrustedHostMiddleware,
+    allowed_hosts=allowed_hosts
 )
 
 
