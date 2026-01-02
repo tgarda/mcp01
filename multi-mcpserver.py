@@ -1,5 +1,6 @@
 import contextlib
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from echo_server import mcp as echo_mcp
 from math_server import mcp as math_mcp
@@ -23,10 +24,28 @@ allowed_hosts = [
 ]
 
 app = FastAPI(lifespan=lifespan)
+# app.add_middleware(
+#     TrustedHostMiddleware, allowed_hosts=allowed_hosts
+# )
 app.add_middleware(
-    TrustedHostMiddleware, 
-    allowed_hosts=allowed_hosts
+    TrustedHostMiddleware, allowed_hosts=["localhost", "mcp01.onrender.com"]
 )
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/echo", echo_mcp.streamable_http_app())
 app.mount("/math", math_mcp.streamable_http_app())
 
