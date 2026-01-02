@@ -27,29 +27,27 @@ app = FastAPI(lifespan=lifespan)
 app.mount("/echo", echo_mcp.streamable_http_app())
 app.mount("/math", math_mcp.streamable_http_app())
 
-# app.add_middleware(
-#     TrustedHostMiddleware, allowed_hosts=allowed_hosts
-# )
+app.add_middleware(
+    TrustedHostMiddleware, allowed_hosts=allowed_hosts
+)
 # app.add_middleware(
 #     TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "mcp01.onrender.com"]
 # )
 
-origins = [
-    "http://localhost.tiangolo.com",
-    "https://localhost.tiangolo.com",
-    "http://localhost",
-    "http://localhost:10000",
-]
+# origins = [
+#     "http://localhost.tiangolo.com",
+#     "https://localhost.tiangolo.com",
+#     "http://localhost",
+#     "http://localhost:10000",
+# ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    TrustedHostMiddleware,
-    allowed_hosts=allowed_hosts
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"]
+# )
 
 
 
