@@ -24,12 +24,15 @@ allowed_hosts = [
 ]
 
 app = FastAPI(lifespan=lifespan)
-# app.add_middleware(
-#     TrustedHostMiddleware, allowed_hosts=allowed_hosts
-# )
+app.mount("/echo", echo_mcp.streamable_http_app())
+app.mount("/math", math_mcp.streamable_http_app())
+
 app.add_middleware(
-    TrustedHostMiddleware, allowed_hosts=["localhost", "mcp01.onrender.com"]
+    TrustedHostMiddleware, allowed_hosts=allowed_hosts
 )
+# app.add_middleware(
+#     TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "mcp01.onrender.com"]
+# )
 
 origins = [
     "http://localhost.tiangolo.com",
@@ -46,8 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/echo", echo_mcp.streamable_http_app())
-app.mount("/math", math_mcp.streamable_http_app())
+
 
 # mcp = FastMCP("Community Chatters", host="0.0.0.0", port=8000)
 
