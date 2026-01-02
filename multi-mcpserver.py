@@ -27,6 +27,10 @@ app = FastAPI(lifespan=lifespan)
 app.mount("/echo", echo_mcp.streamable_http_app())
 app.mount("/math", math_mcp.streamable_http_app())
 
+@app.get("/")
+async def root():
+    return {"message": "Hello MCP World"}
+
 app.add_middleware(
     TrustedHostMiddleware, allowed_hosts=allowed_hosts
 )
