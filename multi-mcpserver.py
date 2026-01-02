@@ -1,5 +1,6 @@
 import contextlib
 from fastapi import FastAPI
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from echo_server import mcp as echo_mcp
 from math_server import mcp as math_mcp
 import os
@@ -15,7 +16,17 @@ async def lifespan(app: FastAPI):
 # to run on render.com
 PORT = os.environ.get("PORT", 10000)
 
+allowed_hosts = [
+    "localhost",  # for local development
+    "127.0.0.1",  # for local development
+    os.environ.get("RENDER_EXTERNAL_HOSTNAME", "mcp01.onrender.com") # the full Render domain
+]
+
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    TrustedHostMiddleware, 
+    allowed_hosts=allowed_hosts
+)
 app.mount("/echo", echo_mcp.streamable_http_app())
 app.mount("/math", math_mcp.streamable_http_app())
 
