@@ -23,9 +23,21 @@ allowed_hosts = [
     os.environ.get("RENDER_EXTERNAL_HOSTNAME", "mcp01.onrender.com") # the full Render domain
 ]
 
+echo_subapp = echo_mcp.streamable_http_app()
+echo_subapp.add_middleware(
+    TrustedHostMiddleware, allowed_hosts=allowed_hosts
+)
+
+math_subapp = math_mcp.streamable_http_app()
+math_subapp.add_middleware(
+    TrustedHostMiddleware, allowed_hosts=allowed_hosts
+)
+
 app = FastAPI(lifespan=lifespan)
-app.mount("/echo", echo_mcp.streamable_http_app())
-app.mount("/math", math_mcp.streamable_http_app())
+# app.mount("/echo", echo_mcp.streamable_http_app())
+# app.mount("/math", math_mcp.streamable_http_app())
+app.mount("/echo", echo_subapp)
+app.mount("/math", math_subapp)
 
 @app.get("/")
 async def root():
