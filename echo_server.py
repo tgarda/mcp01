@@ -25,6 +25,6 @@ mcp = FastMCP(
 
 @mcp.tool(description="A simple remote echo tool")
 def echo(message: str) -> str:
-    return f"Echo: {message}"
+    return f"Echo from mcp01: {message}"
 
 
