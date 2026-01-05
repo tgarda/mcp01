@@ -2,3 +2,4 @@ mcp
 fastapi[all]
 fastapi
 uvicorn
+scalekit-sdk-python

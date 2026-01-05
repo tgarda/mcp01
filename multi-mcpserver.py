@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from echo_server import mcp as echo_mcp
 from math_server import mcp as math_mcp
+from auth import AuthMiddleware
 import os
 
 #Create a combined lifespan to manage both session managers
@@ -17,13 +18,49 @@ async def lifespan(app: FastAPI):
 # to run on render.com
 PORT = os.environ.get("PORT", 10000)
 
+# for the TrustedHostMiddleware
 allowed_hosts = [
     "localhost",  # for local development
     "127.0.0.1",  # for local development
     os.environ.get("RENDER_EXTERNAL_HOSTNAME", "mcp01.onrender.com") # the full Render domain
 ]
 
+# for the CORS middleware
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:10000",
+]
+
+
 app = FastAPI(lifespan=lifespan)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+# Add TrustedHostMiddleware
+app.add_middleware(
+    TrustedHostMiddleware, allowed_hosts=allowed_hosts
+)
+# app.add_middleware(
+#     TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "mcp01.onrender.com"]
+# )
+
+# add AuthMiddleware
+app.add_middleware(
+    AuthMiddleware,
+    audience="https://mcp01.onrender.com",
+    issuer="https://tgtest01.scalekit.dev/resources/res_106544726789849346",
+    jwks_uri="https://tgtest01.scalekit.dev/resources/res_106544726789849346/.well-known/jwks.json"
+)
+
 app.mount("/echo", echo_mcp.streamable_http_app())
 app.mount("/math", math_mcp.streamable_http_app())
 # app.mount("/echo", echo_subapp)
@@ -33,29 +70,24 @@ app.mount("/math", math_mcp.streamable_http_app())
 async def root():
     return {"message": "Hello MCP World"}
 
-app.add_middleware(
-    TrustedHostMiddleware, allowed_hosts=allowed_hosts
-)
-# app.add_middleware(
-#     TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "mcp01.onrender.com"]
-# )
-
-# origins = [
-#     "http://localhost.tiangolo.com",
-#     "https://localhost.tiangolo.com",
-#     "http://localhost",
-#     "http://localhost:10000",
-# ]
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"]
-# )
-
-
+# OAuth Protected Resource Metadata endpoint - Required for MCP client discovery
+# Copy the actual authorization server URL and metadata from your Scalekit dashboard.
+# The values shown here are examples - replace with your actual configuration.
+@app.get('/.well-known/oauth-protected-resource/echo/mcp')
+async def get_oauth_protected_resource():
+    return JSONResponse({
+    "authorization_servers": [
+        "https://tgtest01.scalekit.dev/resources/res_106544726789849346"
+    ],
+    "bearer_methods_supported": [
+        "header"
+    ],
+    "resource": "https://mcp01.onrender.com/echo/mcp/",
+    "resource_documentation": "https://mcp01.onrender.com/echo/mcp/docs",
+    "scopes_supported": [
+        "search:read"
+    ]
+})
 
 # mcp = FastMCP("Community Chatters", host="0.0.0.0", port=8000)
 
