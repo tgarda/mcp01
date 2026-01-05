@@ -7,7 +7,7 @@ from scalekit import ScalekitClient
 from scalekit.common.scalekit import TokenValidationOptions
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from .config import settings
+from config import settings
 
 # Configure logging
 logging.basicConfig(
