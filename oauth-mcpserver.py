@@ -1,0 +1,46 @@
+import contextlib
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from echo_server2 import mcp as echo_mcp
+import os
+
+#Create a combined lifespan to manage both session managers
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with contextlib.AsyncExitStack() as stack:
+        await stack.enter_async_context(echo_mcp.session_manager.run())
+#        await stack.enter_async_context(math_mcp.session_manager.run())
+        yield
+
+# to run on render.com
+PORT = os.environ.get("PORT", 10001)
+
+allowed_hosts = [
+    "localhost",  # for local development
+    "127.0.0.1",  # for local development
+    os.environ.get("RENDER_EXTERNAL_HOSTNAME", "mcp02.onrender.com") # the full Render domain
+]
+
+app = FastAPI(lifespan=lifespan)
+app.mount("/echo2", echo_mcp.streamable_http_app())
+#app.mount("/math", math_mcp.streamable_http_app())
+
+app.add_middleware(
+    TrustedHostMiddleware, allowed_hosts=allowed_hosts
+)
+
+@app.get("/")
+async def root():
+    return {"message": "Hello oauth MCP World"}
+
+
+# mcp = FastMCP("Community Chatters", host="0.0.0.0", port=8000)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=PORT) 
+    #uvicorn.run(app, host="0.0.0.0", port=10000) 
+    #uvicorn.run(app, host="0.0.0.0", port=8000) 
+    #mcp.run(transport="streamable-http")
+
